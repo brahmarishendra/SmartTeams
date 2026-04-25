@@ -96,7 +96,7 @@ export default function DashboardLayout() {
           
           <div className="p-8 flex items-center justify-center lg:justify-start space-x-3 mb-4">
             <div className="w-[50px] h-[50px] rounded-2xl overflow-hidden shadow-lg shadow-primary/20 shrink-0">
-               <img src="https://i.pinimg.com/1200x/6d/60/39/6d6039952777dcfd564c9ae06464320f.jpg" alt="Logo" className="w-full h-full object-cover" />
+               <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-2xl tracking-tight hidden lg:block text-foreground">TaskFlow</span>
           </div>
@@ -170,7 +170,7 @@ export default function DashboardLayout() {
               <LayoutDashboard className="w-6 h-6" />
             </button>
             <div className="w-10 h-10 rounded-[1rem] overflow-hidden shadow-sm">
-               <img src="https://i.pinimg.com/1200x/6d/60/39/6d6039952777dcfd564c9ae06464320f.jpg" alt="Logo" className="w-full h-full object-cover" />
+               <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-xl">TaskFlow</span>
           </div>
@@ -196,7 +196,7 @@ export default function DashboardLayout() {
               <div className="p-8 flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg">
-                    <img src="https://i.pinimg.com/1200x/6d/60/39/6d6039952777dcfd564c9ae06464320f.jpg" alt="Logo" className="w-full h-full object-cover" />
+                    <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
                   </div>
                   <span className="font-bold text-2xl tracking-tight text-foreground">TaskFlow</span>
                 </div>

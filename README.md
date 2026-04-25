@@ -4,6 +4,7 @@
 **SmartTeams** is a state-of-the-art, cloud-native Task Management system designed for high-performance teams. Built with a focus on **Real-time Synchronicity** and **AI-Driven Analytics**, it provides a seamless interface for Administrators to manage workflows and Employees to track their daily productivity.
 
 ---
+<img width="1568" height="733" alt="image" src="https://github.com/user-attachments/assets/adbf5376-64f6-4ab3-8566-45c0a225a840" />
 
 ## 🛠️ Technology Stack
 The application leverages a modern, scalable stack to ensure sub-second latency and a premium user experience:
@@ -62,6 +63,7 @@ The database uses a relational PostgreSQL schema with specific focus on data int
 - **Network Validation**: Monitored Supabase WebSocket frames in the Network tab to ensure real-time sync latency is below 100ms.
 - **Role Validation**: Successfully tested "Admin-only" delete and approval features by switching between restricted and elevated user profiles.
 - **Unit Logic**: Verified the `isBefore` date logic for the "Urgent Task" notification triggers.
+<img width="1456" height="819" alt="image" src="https://github.com/user-attachments/assets/be5563de-5ef8-4a49-a89a-8d6b27d35693" />
 
 ---
 

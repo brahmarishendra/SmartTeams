@@ -1,5 +1,4 @@
-import React from 'react';
-import { Bell, Mail, MessageSquare, Clock, Check, MoreVertical, ShieldCheck, Zap } from 'lucide-react';
+import { Bell, Mail, MessageSquare, MoreVertical, ShieldCheck, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function Notifications({ onClose }: { onClose: () => void }) {

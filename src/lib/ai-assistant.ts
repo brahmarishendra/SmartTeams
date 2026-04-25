@@ -11,7 +11,7 @@ export async function processAIQuery(query: string): Promise<string> {
     .from('profiles')
     .select('full_name, role, is_approved');
 
-  const GEMINI_API_KEY = "AIzaSyCFAt2PJ677bwJ4a5ffZ_aHcZKSWKpj3zA";
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyCFAt2PJ677bwJ4a5ffZ_aHcZKSWKpj3zA";
 
   const systemPrompt = `You are "Zyricon AI", the high-performance workspace intelligence engine for TaskFlow.
 Your objective is to provide precise, data-driven insights based on REAL-TIME workspace state.

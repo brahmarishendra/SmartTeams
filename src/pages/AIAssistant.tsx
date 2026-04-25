@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { CardContent, CardTitle, Input, Button } from '../components/ui';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
 import { processAIQuery } from '../lib/ai-assistant';

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, Info, Sun, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, Info, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Notifications from '../components/Notifications';
 import { isBefore, addDays, isPast, parseISO } from 'date-fns';
 

@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, Info, Moon, Sun, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, Info, Sun, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Notifications from '../components/Notifications';
+import { isBefore, addDays, isPast, parseISO } from 'date-fns';
 
 export default function DashboardLayout() {
   const { session, profile, signOut } = useAuth();
   const location = useLocation();
   const [notification, setNotification] = useState<{ title: string; message: string } | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   useEffect(() => {
@@ -35,7 +37,6 @@ export default function DashboardLayout() {
             message: newRecord.title,
           });
           
-          // Play notification sound
           try {
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
             audio.volume = 0.5;
@@ -44,7 +45,6 @@ export default function DashboardLayout() {
             console.warn("Audio playback failed:", e);
           }
           
-          // Auto-hide after exactly 5 seconds
           setTimeout(() => setNotification(null), 5000);
         }
       )
@@ -59,12 +59,10 @@ export default function DashboardLayout() {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Redirect to pending approval if not approved
   if (profile && !profile.is_approved && location.pathname !== '/pending-approval') {
     return <Navigate to="/pending-approval" replace />;
   }
 
-  // Wait for profile to load
   if (!profile && session) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background space-y-4">
@@ -92,17 +90,25 @@ export default function DashboardLayout() {
       <div className="w-full h-full flex flex-col md:flex-row overflow-hidden">
         
         {/* Desktop Sidebar */}
-        <aside className="w-20 lg:w-[280px] bg-[#f8f9fa] flex-col hidden md:flex border-r border-border/50 shrink-0 transition-all relative">
+        <aside className={`${isCollapsed ? 'w-24' : 'w-20 lg:w-[280px]'} bg-[#f8f9fa] flex flex-col hidden md:flex border-r border-border/50 shrink-0 transition-all duration-300 relative`}>
           
-          <div className="p-8 flex items-center justify-center lg:justify-start space-x-3 mb-4">
-            <div className="w-[50px] h-[50px] rounded-2xl overflow-hidden shadow-lg shadow-primary/20 shrink-0">
-               <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
+          <div className={`p-8 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} mb-4`}>
+            <div className="flex items-center space-x-3 overflow-hidden">
+              <div className="w-[45px] h-[45px] rounded-2xl overflow-hidden shadow-lg shadow-primary/20 shrink-0">
+                 <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
+              </div>
+              {!isCollapsed && <span className="font-bold text-2xl tracking-tight text-foreground whitespace-nowrap">TaskFlow</span>}
             </div>
-            <span className="font-bold text-2xl tracking-tight hidden lg:block text-foreground">TaskFlow</span>
+            <button 
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-1.5 hover:bg-white rounded-xl text-muted-foreground hover:text-primary transition-colors cursor-pointer hidden lg:block"
+            >
+              {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            </button>
           </div>
           
           <nav className="flex-1 px-6 space-y-3 overflow-y-auto pb-8">
-            <div className="hidden lg:block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4 px-2">Main Menu</div>
+            {!isCollapsed && <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4 px-2">Main Menu</div>}
             {allowedNavItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -110,52 +116,45 @@ export default function DashboardLayout() {
                   key={item.name}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center lg:justify-start justify-center space-x-0 lg:space-x-4 px-4 py-4 rounded-2xl transition-all font-semibold ${
+                    `flex items-center ${isCollapsed ? 'justify-center' : 'justify-start space-x-4'} px-4 py-4 rounded-2xl transition-all font-semibold ${
                       isActive 
-                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]' 
+                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' 
                         : 'text-muted-foreground hover:bg-white hover:text-foreground hover:shadow-sm'
                     }`
                   }
                   title={item.name}
                 >
                   <Icon className="w-6 h-6" />
-                  <span className="hidden lg:block">{item.name}</span>
+                  {!isCollapsed && <span>{item.name}</span>}
                 </NavLink>
               );
             })}
           </nav>
 
-          <div className="p-6 mt-auto bg-gradient-to-t from-secondary/80 to-transparent">
-            <div className="flex flex-col lg:flex-row items-center lg:space-x-4 mb-6 bg-white p-4 rounded-3xl shadow-sm">
-              <div className="w-12 h-12 rounded-[1.2rem] bg-gradient-to-tr from-accent to-primary text-white flex items-center justify-center font-bold relative shrink-0 shadow-inner overflow-hidden">
+          <div className={`p-6 mt-auto bg-gradient-to-t from-secondary/80 to-transparent ${isCollapsed ? 'items-center' : ''}`}>
+            <div className={`flex ${isCollapsed ? 'flex-col' : 'flex-row'} items-center lg:space-x-4 mb-6 bg-white p-4 rounded-3xl shadow-sm`}>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-accent to-primary text-white flex items-center justify-center font-bold relative shrink-0 shadow-inner overflow-hidden">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   profile?.full_name?.charAt(0) || 'U'
                 )}
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
-              <div className="hidden lg:block flex-1 min-w-0 text-center lg:text-left mt-2 lg:mt-0">
-                <p className="text-sm font-bold truncate text-foreground">{profile?.full_name}</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary/50 inline-block px-2 py-0.5 rounded-md mt-1">{profile?.role}</p>
-              </div>
-            </div>
-            <div className="flex gap-2 mb-4">
-              <button 
-                onClick={() => setShowNotifPanel(!showNotifPanel)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl bg-white dark:bg-white/5 border border-border/50 text-sm font-bold text-muted-foreground hover:bg-gray-50 dark:hover:bg-white/10 transition-all ${showNotifPanel ? 'bg-primary/5 text-primary border-primary/20' : ''}`}
-              >
-                <Bell className="w-4 h-4" />
-                Alerts
-              </button>
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate text-foreground">{profile?.full_name}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary/50 inline-block px-2 py-0.5 rounded-md mt-1">{profile?.role}</p>
+                </div>
+              )}
             </div>
             <button 
               onClick={signOut}
-              className="flex w-full items-center justify-center lg:justify-start space-x-0 lg:space-x-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+              className={`flex w-full items-center ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'} px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer`}
               title="Sign Out"
             >
               <LogOut className="w-5 h-5" />
-              <span className="hidden lg:block">Sign Out</span>
+              {!isCollapsed && <span>Sign Out</span>}
             </button>
           </div>
         </aside>
@@ -163,28 +162,15 @@ export default function DashboardLayout() {
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-5 bg-card border-b border-border/50 sticky top-0 z-20">
            <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 text-muted-foreground hover:bg-secondary rounded-full cursor-pointer"
-            >
-              <LayoutDashboard className="w-6 h-6" />
-            </button>
+            <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 text-muted-foreground hover:bg-secondary rounded-full cursor-pointer"><LayoutDashboard className="w-6 h-6" /></button>
             <div className="w-10 h-10 rounded-[1rem] overflow-hidden shadow-sm">
                <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-xl">TaskFlow</span>
           </div>
           <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setShowNotifPanel(!showNotifPanel)}
-              className={`p-2 text-muted-foreground hover:bg-secondary rounded-full relative cursor-pointer ${showNotifPanel ? 'bg-secondary text-primary' : ''}`}
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">
-               {profile?.full_name?.charAt(0)}
-            </div>
+            <button onClick={() => setShowNotifPanel(!showNotifPanel)} className={`p-2 text-muted-foreground hover:bg-secondary rounded-full relative cursor-pointer ${showNotifPanel ? 'bg-secondary text-primary' : ''}`}><Bell className="w-5 h-5" /></button>
+            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">{profile?.full_name?.charAt(0)}</div>
           </div>
         </header>
 
@@ -200,9 +186,7 @@ export default function DashboardLayout() {
                   </div>
                   <span className="font-bold text-2xl tracking-tight text-foreground">TaskFlow</span>
                 </div>
-                <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-muted-foreground hover:bg-white rounded-full transition-colors cursor-pointer">
-                  <X className="w-6 h-6" />
-                </button>
+                <button onClick={() => setIsSidebarOpen(false)} className="p-2 text-muted-foreground hover:bg-white rounded-full cursor-pointer"><X className="w-6 h-6" /></button>
               </div>
 
               <nav className="flex-1 px-6 space-y-3 overflow-y-auto pb-8">
@@ -215,9 +199,7 @@ export default function DashboardLayout() {
                       onClick={() => setIsSidebarOpen(false)}
                       className={({ isActive }) =>
                         `flex items-center space-x-4 px-4 py-4 rounded-2xl transition-all font-semibold ${
-                          isActive 
-                            ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]' 
-                            : 'text-muted-foreground hover:bg-white hover:text-foreground'
+                          isActive ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20' : 'text-muted-foreground hover:bg-white hover:text-foreground'
                         }`
                       }
                     >
@@ -231,11 +213,7 @@ export default function DashboardLayout() {
               <div className="p-6 bg-gradient-to-t from-secondary/80 to-transparent">
                 <div className="flex items-center space-x-4 mb-6 bg-white p-4 rounded-3xl shadow-sm">
                   <div className="w-12 h-12 rounded-[1.2rem] bg-gradient-to-tr from-accent to-primary text-white flex items-center justify-center font-bold relative shrink-0 overflow-hidden">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      profile?.full_name?.charAt(0) || 'U'
-                    )}
+                    {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : profile?.full_name?.charAt(0) || 'U'}
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -243,13 +221,7 @@ export default function DashboardLayout() {
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary/50 inline-block px-2 py-0.5 rounded-md mt-1">{profile?.role}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => { signOut(); setIsSidebarOpen(false); }}
-                  className="flex w-full items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span>Sign Out</span>
-                </button>
+                <button onClick={() => { signOut(); setIsSidebarOpen(false); }} className="flex w-full items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><LogOut className="w-5 h-5" /><span>Sign Out</span></button>
               </div>
             </aside>
           </div>
@@ -260,8 +232,6 @@ export default function DashboardLayout() {
           <div className="flex-1 overflow-y-auto p-4 md:p-10 pb-24 md:pb-10 scrollbar-none">
             <Outlet />
           </div>
-
-          {/* Notification Overlay Panel */}
           {showNotifPanel && (
             <div className="fixed top-20 right-6 z-[60] w-full max-w-sm">
               <Notifications onClose={() => setShowNotifPanel(false)} />
@@ -270,26 +240,18 @@ export default function DashboardLayout() {
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-xl border-t border-border/50 flex justify-around items-center p-2 pb-safe z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-xl border-t border-border/50 flex justify-around items-center p-2 pb-safe z-50">
           {allowedNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
                 key={item.name}
                 to={item.path}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${
-                    isActive 
-                      ? 'text-primary' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`
-                }
+                className={({ isActive }) => `flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
               >
                 {({ isActive }) => (
                    <>
-                     <div className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all ${isActive ? 'bg-primary/10' : ''}`}>
-                       <Icon className={`w-5 h-5 ${isActive ? 'fill-primary/20' : ''}`} />
-                     </div>
+                     <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${isActive ? 'bg-primary/10' : ''}`}><Icon className={`w-5 h-5 ${isActive ? 'fill-primary/20' : ''}`} /></div>
                      <span className={`text-[10px] font-semibold mt-0.5 ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{item.name}</span>
                    </>
                 )}
@@ -298,27 +260,15 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        {/* Real-time Notification Toast */}
         {notification && (
           <div className="fixed bottom-20 md:bottom-10 right-6 z-[100] animate-in slide-in-from-right-10 fade-in duration-300">
             <div className="bg-[#1f1d1a] text-white p-5 rounded-[1.5rem] shadow-2xl border border-white/10 flex items-start gap-4 max-w-sm">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
-                <Info className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-sm mb-1">{notification.title}</h4>
-                <p className="text-xs text-white/60 font-medium truncate">{notification.message}</p>
-              </div>
-              <button 
-                onClick={() => setNotification(null)}
-                className="p-1 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4 text-white/40" />
-              </button>
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0"><Info className="w-5 h-5 text-blue-400" /></div>
+              <div className="flex-1 min-w-0"><h4 className="font-bold text-sm mb-1">{notification.title}</h4><p className="text-xs text-white/60 font-medium truncate">{notification.message}</p></div>
+              <button onClick={() => setNotification(null)} className="p-1 hover:bg-white/10 rounded-full transition-colors"><X className="w-4 h-4 text-white/40" /></button>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

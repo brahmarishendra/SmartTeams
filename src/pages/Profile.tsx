@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { format, parseISO } from 'date-fns';
-import { Clock, Camera, User, Loader2 } from 'lucide-react';
+import { Clock, Camera, User, Loader2, LogOut } from 'lucide-react';
 
 export default function Profile() {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const [tasks, setTasks] = useState<any[]>([]);
   const [stats, setStats] = useState({ completed: 0, total: 0, score: 0 });
   const [uploading, setUploading] = useState(false);
@@ -113,9 +113,17 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="hidden md:flex flex-col items-end">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account ID</p>
-            <p className="text-xs font-mono text-gray-300">{profile.id.substring(0, 18)}...</p>
+          <div className="flex flex-col items-center md:items-end">
+            <p className="hidden md:block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account ID</p>
+            <p className="hidden md:block text-xs font-mono text-gray-300">{profile.id.substring(0, 18)}...</p>
+            
+            <button 
+              onClick={() => signOut()}
+              className="mt-2 md:mt-4 flex items-center gap-2 px-6 py-3 md:px-4 md:py-2 bg-red-50 text-red-600 rounded-2xl md:rounded-xl hover:bg-red-100 transition-all text-sm font-bold border border-red-100 shadow-sm active:scale-95"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
           </div>
         </div>
 

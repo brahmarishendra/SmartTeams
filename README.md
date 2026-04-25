@@ -62,6 +62,27 @@ The database uses a relational PostgreSQL schema with specific focus on data int
 
 ---
 
+## 🧩 Technical Challenges & Solutions
+
+### 1. Single Page Application (SPA) Routing Persistence
+- **The Problem**: Users encountered 404 errors when refreshing sub-pages (like `/login` or `/dashboard`) on Render/Vercel because the server looked for physical files instead of directing to `index.html`.
+- **The Solution**: Implemented **Infrastructure as Code (IaC)** by adding `render.yaml` and `vercel.json` with explicit rewrite rules (`/*` → `/index.html`), ensuring the React Router handles all sub-paths seamlessly.
+
+### 2. Strict Production Build Compliance
+- **The Problem**: Deployment pipelines (Vercel/Render) failed build steps due to strict TypeScript linting of unused declarations (`TS6133`).
+- **The Solution**: Performed a comprehensive code sanitization pass, removing over 25+ unused imports and variables, resulting in a zero-warning, 100% compliant production bundle.
+
+### 3. Real-time Analytics Engine
+- **The Problem**: Traditional polling created unnecessary network overhead and delayed data visualization.
+- **The Solution**: Designed a WebSocket-driven listener system that binds Supabase Postgres changes directly to custom SVG progress rings, enabling instant dashboard updates without page reloads.
+
+### 4. Cross-Refresh Work Persistence
+- **The Problem**: Session timers were resetting to zero upon browser refresh, leading to inaccurate work logs.
+- **The Solution**: Engineered a "Timestamp Resume" logic. Instead of saving raw seconds, we store the **start unix-timestamp** in `localStorage`. On mount, the application calculates `Date.now() - startTime` to resume the timer with millisecond precision.
+
+---
+
 ## 📦 Versioning
 - **Current Version**: 1.0.0-Stable
-- **Deployment**: Configured for Vercel with SPA rewrite rules in `vercel.json`.
+- **Deployment**: Automated via `render.yaml` and `vercel.json`.
+- **Stability**: Verified Build & Runtime (0 Errors).

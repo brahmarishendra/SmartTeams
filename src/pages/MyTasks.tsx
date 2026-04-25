@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, Badge } from '../components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui';
 import { format, isPast, parseISO } from 'date-fns';
-import { Clock, LayoutList, Play, Pause, MoreVertical, CheckCircle2, AlertCircle, Bell, TrendingUp, Trash2 } from 'lucide-react';
+import { Clock, LayoutList, Play, Pause, TrendingUp, Trash2 } from 'lucide-react';
 
 export default function MyTasks() {
   const { profile } = useAuth();
   const [tasks, setTasks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Work Session State
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -69,7 +68,6 @@ export default function MyTasks() {
     if (profile.role !== 'ADMIN') { query = query.eq('assigned_to', profile.id); }
     const { data } = await query.order('due_date', { ascending: true });
     if (data) setTasks(data);
-    setLoading(false);
   };
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {
@@ -86,7 +84,6 @@ export default function MyTasks() {
   const completedCount = tasks.filter(t => t.status === 'Completed').length;
   const progressPercentage = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
   const overdueTasks = tasks.filter(t => t.due_date && isPast(parseISO(t.due_date)) && t.status !== 'Completed');
-  const upcomingTasks = tasks.filter(t => t.due_date && !isPast(parseISO(t.due_date)) && t.status !== 'Completed').slice(0, 3);
 
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);

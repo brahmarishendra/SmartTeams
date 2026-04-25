@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Check, X, User, Phone, Shield, ShieldAlert, Loader2 } from 'lucide-react';
+import { Check, X, Phone, Shield, ShieldAlert, Loader2 } from 'lucide-react';
 
 export default function UserApproval() {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);

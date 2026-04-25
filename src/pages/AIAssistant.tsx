@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { CardContent, CardTitle, Input, Button } from '../components/ui';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { CardContent } from '../components/ui';
+import { Send, Bot, User } from 'lucide-react';
 import { processAIQuery } from '../lib/ai-assistant';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';

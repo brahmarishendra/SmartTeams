@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { format, isPast, isToday, parseISO, addDays, isBefore, startOfDay } from 'date-fns';
-import { Search, Filter as FilterIcon, Calendar, MessageSquare, LayoutList, CheckSquare, Plus, X, Bell, CheckCircle2, Trash2 } from 'lucide-react';
+import { Search, Filter as FilterIcon, Calendar, LayoutList, CheckSquare, Plus, X, Bell, Trash2 } from 'lucide-react';
 
 export default function Dashboard() {
   const { profile } = useAuth();
   const [tasks, setTasks] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   
   // View State
   const [viewMode, setViewMode] = useState<'list' | 'board' | 'calendar'>('board');
@@ -27,8 +26,6 @@ export default function Dashboard() {
   const [priority, setPriority] = useState('Medium');
   const [dueDate, setDueDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
-  
-  const [mockupTask, setMockupTask] = useState<any | null>(null);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +74,6 @@ export default function Dashboard() {
   const fetchTasks = async () => {
     const { data } = await supabase.from('tasks').select('*, assigned_user:assigned_to(full_name)').order('due_date', { ascending: true });
     if (data) setTasks(data);
-    setLoading(false);
   };
 
   const fetchProfiles = async () => {
@@ -301,7 +297,7 @@ export default function Dashboard() {
                      <div key={task.id} className="bg-white/10 p-4 rounded-xl space-y-2 border border-white/10 hover:bg-white/20 transition-colors">
                         <h4 className="text-sm font-bold truncate text-white">{task.title}</h4>
                         <div className="flex justify-between text-xs text-white/60 font-semibold"><span>{task.assigned_user?.full_name?.split(' ')[0]}</span><span className="text-orange-400">{format(parseISO(task.due_date), 'MMM do')}</span></div>
-                        {profile?.role === 'ADMIN' && <button onClick={() => setMockupTask(task)} className="w-full mt-2 py-2 text-xs font-bold bg-white text-[#1f1d1a] rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">Send Reminder</button>}
+                        {profile?.role === 'ADMIN' && <button onClick={() => {}} className="w-full mt-2 py-2 text-xs font-bold bg-white text-[#1f1d1a] rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">Send Reminder</button>}
                      </div>
                   ))}
                </div>

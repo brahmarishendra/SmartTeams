@@ -24,6 +24,9 @@ We implemented a **Glassmorphic Design System** to create a sense of depth and h
 - **Dynamic Interaction**: Every button includes `active:scale-[0.98]` and `hover:scale-[1.02]` transforms to provide immediate haptic-like visual feedback.
 - **Color Psychology**: The palette uses a high-contrast **Mint Green** (Success) and **Deep Orange** (Action) to guide the user's attention to critical tasks (overdue/urgent).
 
+### 🔐 Secure-by-Default Landing Logic
+When published on Render, the application is designed to land users directly on the **Authentication Page**. This is a deliberate security implementation using **React Router Guards** and **Supabase Auth**. Upon initial load, the system checks for an active session; if unauthenticated, it triggers an immediate redirect to `/login`. This "Auth-First" architecture ensures that sensitive workspace intelligence and team analytics are never exposed to unauthorized visitors, maintaining professional-grade security for the entire SmartTeams ecosystem.
+
 ---
 
 ## 🏗️ System Design & Software Engineering (SE)

@@ -76,7 +76,7 @@ export default function Profile() {
   if (!profile) return null;
 
   return (
-    <div className="animate-in fade-in duration-500 w-full h-full min-h-screen bg-white p-6 md:p-12 font-sans -m-4 md:-m-10">
+    <div className="animate-in fade-in duration-500 w-full bg-white font-sans">
       
       <div className="max-w-[1200px] mx-auto">
         

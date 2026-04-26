@@ -65,7 +65,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#31170A] flex items-center justify-center p-4 md:p-8 font-sans antialiased text-gray-900 select-none">
+    <div className="min-h-screen bg-[#31170A] flex flex-col items-center justify-center p-4 md:p-8 py-12 font-sans antialiased text-gray-900 select-none overflow-y-auto">
 
       {/* Outer White Card */}
       <div className="w-full max-w-[1200px] bg-white rounded-[1px] p-4 flex shadow-2xl flex-col md:flex-row shadow-[#170a04]/50 relative">

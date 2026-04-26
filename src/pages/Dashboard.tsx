@@ -186,7 +186,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 w-full h-full min-h-screen bg-[#fcfaf5] p-6 md:p-10 font-sans text-[#1f1d1a] -m-4 md:-m-10">
+    <div className="animate-in fade-in duration-500 w-full bg-[#fcfaf5] font-sans text-[#1f1d1a]">
       
       {/* Top Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
@@ -364,7 +364,7 @@ export default function Dashboard() {
 
          {/* Sidebar: Upcoming Deadlines */}
          <div className="xl:col-span-1 space-y-6">
-            <div className="bg-[#1f1d1a] rounded-[1.5rem] p-6 shadow-xl relative overflow-hidden group hover:shadow-2xl transition-all">
+            <div className="bg-[#1f1d1a] rounded-[1.5rem] p-4 md:p-6 shadow-xl relative overflow-hidden group hover:shadow-2xl transition-all">
                <div className="absolute top-0 right-0 p-4 opacity-20"><Bell className="w-16 h-16 text-white" /></div>
                <h3 className="font-bold text-white text-xl mb-1 relative z-10">Action Required</h3>
                <p className="text-[#8a867d] text-xs font-semibold mb-6 relative z-10">Deadlines within 3 days</p>

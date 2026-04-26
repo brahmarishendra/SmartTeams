@@ -87,10 +87,10 @@ export default function AIAssistant() {
         
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden relative">
           {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto space-y-8 px-6 py-8 scrollbar-none">
+          <div className="flex-1 overflow-y-auto space-y-6 md:space-y-8 px-4 md:px-6 py-6 md:py-8 scrollbar-none">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
-                <div className={`flex gap-4 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex gap-3 md:gap-4 max-w-[95%] md:max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                   <div className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-lg ${
                     msg.role === 'user' 
                       ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 text-white' 
@@ -98,7 +98,7 @@ export default function AIAssistant() {
                   }`}>
                     {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
                   </div>
-                  <div className={`p-5 rounded-3xl ${
+                  <div className={`p-4 md:p-5 rounded-3xl ${
                     msg.role === 'user' 
                       ? 'bg-white/10 border border-white/10 rounded-tr-sm text-white' 
                       : 'bg-[#1a1425] border border-white/5 shadow-2xl rounded-tl-sm text-purple-50'
@@ -136,7 +136,7 @@ export default function AIAssistant() {
           </div>
 
           {/* Input Area - Sleek Zyricon Bar */}
-          <div className="p-8 pt-4">
+          <div className="p-4 md:p-8 pt-2 md:pt-4">
             <form onSubmit={handleSubmit} className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-[2rem] blur opacity-25 group-focus-within:opacity-50 transition duration-1000"></div>
               <div className="relative">

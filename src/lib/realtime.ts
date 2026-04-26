@@ -1,31 +1,41 @@
 import { supabase } from './supabase';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 /**
  * Singleton service to handle real-time workspace-wide signals.
  */
 
 const CHANNEL_NAME = 'workspace-realtime';
+let broadcastChannel: RealtimeChannel | null = null;
 
 export const realtimeService = {
   /**
+   * Gets or initializes the persistent broadcast channel.
+   */
+  getChannel() {
+    if (!broadcastChannel) {
+      broadcastChannel = supabase.channel(CHANNEL_NAME);
+      broadcastChannel.subscribe();
+    }
+    return broadcastChannel;
+  },
+
+  /**
    * Broadcasts a signal to all connected clients.
-   * This uses a transient channel for sending to avoid persistent memory overhead
-   * on the sender side if they aren't the primary listener.
+   * Reuses a persistent channel for maximum performance.
    */
   async broadcast(event: string, payload: any) {
     try {
-      const channel = supabase.channel(`send-${Date.now()}-${Math.random()}`);
+      const channel = this.getChannel();
       
-      // We use a temporary channel to send, then immediately remove it
-      // to prevent "dangling" channels that cause phoenix.mjs warnings.
-      await channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.send({
-            type: 'broadcast',
-            event,
-            payload: { ...payload, sentAt: new Date().toISOString() }
-          });
-          supabase.removeChannel(channel);
+      return channel.send({
+        type: 'broadcast',
+        event,
+        payload: { 
+          ...payload, 
+          sentAt: new Date().toISOString(),
+          // Add a random ID to ensure uniqueness for React reconciliation
+          _msgId: Math.random().toString(36).substring(7)
         }
       });
     } catch (err) {

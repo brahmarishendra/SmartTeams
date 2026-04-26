@@ -258,7 +258,7 @@ export default function Dashboard() {
                      const colTasks = filteredTasks.filter(t => t.status === col.id);
                      return (
                         <div key={col.id} className="min-w-[300px] max-w-[320px] flex-1 flex flex-col gap-4">
-                           <div className="flex items-center gap-2 mb-2"><h3 className="font-bold text-[#1f1d1a]">{col.label}</h3><span className="text-sm font-medium text-[#8a867d]">({col.count})</span></div>
+                           <div className="flex items-center gap-2 mb-2"><h3 className="font-bold text-[#1f1d1a]"><span>{col.label}</span></h3><span className="text-sm font-medium text-[#8a867d]"><span>({col.count})</span></span></div>
                            <div className="flex flex-col gap-4">
                               {colTasks.map(task => {
                                  const isOverdue = task.due_date && isPast(parseISO(task.due_date)) && !isToday(parseISO(task.due_date)) && task.status !== 'Completed';
@@ -375,7 +375,7 @@ export default function Dashboard() {
                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 relative z-10 min-h-[50px]">
                   {upcomingDeadlines.length === 0 ? (
                     <div key="empty-deadlines" className="text-center py-6 text-sm font-semibold text-[#8a867d]">
-                      All caught up!
+                      <span>All caught up!</span>
                     </div>
                   ) : (
                     <div key="deadlines-list" className="space-y-4">
@@ -383,8 +383,8 @@ export default function Dashboard() {
                         <div key={task.id} className="bg-white/10 p-4 rounded-xl space-y-2 border border-white/10 hover:bg-white/20 transition-colors">
                           <h4 className="text-sm font-bold truncate text-white">{task.title}</h4>
                           <div className="flex justify-between text-xs text-white/60 font-semibold">
-                            <span>{task.assigned_user?.full_name?.split(' ')[0]}</span>
-                            <span className="text-orange-400">{format(parseISO(task.due_date), 'MMM do')}</span>
+                            <span><span>{task.assigned_user?.full_name?.split(' ')[0]}</span></span>
+                            <span className="text-orange-400"><span>{format(parseISO(task.due_date), 'MMM do')}</span></span>
                           </div>
                           {profile?.role === 'ADMIN' && (
                             <button 

@@ -58,7 +58,7 @@ export default function DashboardLayout() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-muted-foreground font-medium animate-pulse">Loading Workspace...</p>
+        <p key="loading-text" className="text-muted-foreground font-medium animate-pulse"><span>Loading Workspace...</span></p>
         <button onClick={signOut} className="text-sm text-red-500 hover:underline mt-4">
           Click here to Sign Out if this takes too long.
         </button>
@@ -88,7 +88,7 @@ export default function DashboardLayout() {
               <div className="w-[45px] h-[45px] rounded-2xl overflow-hidden shadow-lg shadow-primary/20 shrink-0">
                  <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
               </div>
-              {!isCollapsed && <span className="font-bold text-2xl tracking-tight text-foreground whitespace-nowrap">TaskFlow</span>}
+              {!isCollapsed && <span key="brand-name" className="font-bold text-2xl tracking-tight text-foreground whitespace-nowrap"><span>TaskFlow</span></span>}
             </div>
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
@@ -133,9 +133,9 @@ export default function DashboardLayout() {
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
               {!isCollapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate text-foreground">{profile?.full_name}</p>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary/50 inline-block px-2 py-0.5 rounded-md mt-1">{profile?.role}</p>
+                <div key="profile-info" className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate text-foreground"><span>{profile?.full_name}</span></p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-secondary/50 inline-block px-2 py-0.5 rounded-md mt-1"><span>{profile?.role}</span></p>
                 </div>
               )}
             </div>

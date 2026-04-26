@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { format, isPast, isToday, parseISO, addDays, isBefore, startOfDay } from 'date-fns';
-import { Search, Filter as FilterIcon, Calendar, LayoutList, CheckSquare, Plus, X, Bell, Trash2 } from 'lucide-react';
+import { Search, Filter as FilterIcon, Calendar, LayoutList, CheckSquare, Plus, X, Bell, Trash2, ChevronRight } from 'lucide-react';
 import { realtimeService } from '../lib/realtime';
 
 export default function Dashboard() {
@@ -193,9 +193,9 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold tracking-tight">Workspace Tasks</h1>
         <div className="flex flex-wrap items-center gap-4">
            <div className="flex items-center bg-white rounded-full p-1 border border-[#e5e2db] shadow-sm">
-              <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${viewMode === 'list' ? 'bg-[#1f1d1a] text-white shadow-md font-bold' : 'font-semibold text-[#66635e] hover:bg-[#f5f3ef]'}`}><LayoutList className="w-4 h-4" /> List</button>
-              <button onClick={() => setViewMode('board')} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${viewMode === 'board' ? 'bg-[#1f1d1a] text-white shadow-md font-bold' : 'font-semibold text-[#66635e] hover:bg-[#f5f3ef]'}`}><CheckSquare className="w-4 h-4" /> Board</button>
-              <button onClick={() => setViewMode('calendar')} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${viewMode === 'calendar' ? 'bg-[#1f1d1a] text-white shadow-md font-bold' : 'font-semibold text-[#66635e] hover:bg-[#f5f3ef]'}`}><Calendar className="w-4 h-4" /> Calendar</button>
+              <button onClick={() => setViewMode('list')} className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${viewMode === 'list' ? 'bg-[#1f1d1a] text-white shadow-md font-bold' : 'font-semibold text-[#66635e] hover:bg-[#f5f3ef]'}`}><LayoutList className="w-3.5 h-3.5 md:w-4 h-4" /> List</button>
+              <button onClick={() => setViewMode('board')} className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${viewMode === 'board' ? 'bg-[#1f1d1a] text-white shadow-md font-bold' : 'font-semibold text-[#66635e] hover:bg-[#f5f3ef]'}`}><CheckSquare className="w-3.5 h-3.5 md:w-4 h-4" /> Board</button>
+              <button onClick={() => setViewMode('calendar')} className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm transition-all ${viewMode === 'calendar' ? 'bg-[#1f1d1a] text-white shadow-md font-bold' : 'font-semibold text-[#66635e] hover:bg-[#f5f3ef]'}`}><Calendar className="w-3.5 h-3.5 md:w-4 h-4" /> Calendar</button>
            </div>
         </div>
       </div>
@@ -207,10 +207,10 @@ export default function Dashboard() {
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8a867d]" />
                <input className="w-full bg-white border border-[#e5e2db] rounded-full pl-11 pr-4 py-2.5 text-sm font-medium text-[#1f1d1a] placeholder-[#8a867d] focus:outline-none focus:ring-2 focus:ring-[#1f1d1a]/20 shadow-sm transition-all" placeholder="Search tasks..." value={search} onChange={e => setSearch(e.target.value)} />
             </div>
-            <div className="flex items-center gap-4 text-sm font-semibold text-[#66635e]">
-               <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors border shadow-sm cursor-pointer ${showFilters ? 'bg-[#1f1d1a] text-white border-[#1f1d1a]' : 'bg-white text-[#1f1d1a] hover:bg-[#f5f3ef] border-[#e5e2db]'}`}><FilterIcon className="w-4 h-4" /> Filters</button>
+            <div className="flex items-center gap-2 md:gap-4 text-xs md:text-sm font-semibold text-[#66635e]">
+               <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full transition-colors border shadow-sm cursor-pointer ${showFilters ? 'bg-[#1f1d1a] text-white border-[#1f1d1a]' : 'bg-white text-[#1f1d1a] hover:bg-[#f5f3ef] border-[#e5e2db]'}`}><FilterIcon className="w-3.5 h-3.5 md:w-4 h-4" /> Filters</button>
                {profile?.role === 'ADMIN' && (
-                 <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"><Plus className="w-4 h-4" /> Add Task</button>
+                 <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-sm cursor-pointer"><Plus className="w-3.5 h-3.5 md:w-4 h-4" /> Add Task</button>
                )}
             </div>
          </div>
@@ -239,12 +239,13 @@ export default function Dashboard() {
                   <div className="relative">
                     {showScrollHint && (
                       <div className="absolute -top-2 right-0 z-20 animate-in fade-in zoom-in duration-500">
-                        <div className="bg-[#1f1d1a] text-white text-[10px] px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-white/10">
+                        <div className="bg-[#1f1d1a] text-white text-[10px] px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-white/10 group cursor-pointer">
                           <div className="flex gap-1 animate-pulse">
                             <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                             <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
                           </div>
                           <span className="font-bold tracking-tight uppercase">Scroll for more</span>
+                          <ChevronRight className="w-3 h-3 text-white/70 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     )}
@@ -264,7 +265,7 @@ export default function Dashboard() {
                                  const isOverdue = task.due_date && isPast(parseISO(task.due_date)) && !isToday(parseISO(task.due_date)) && task.status !== 'Completed';
                                  const editable = canEditStatus(task);
                                  return (
-                                    <div key={task.id} className="bg-white rounded-[1.25rem] p-5 shadow-sm border border-[#e5e2db] hover:shadow-md transition-shadow flex flex-col group">
+                                    <div key={task.id} className={`bg-white rounded-[1.25rem] p-5 shadow-sm border transition-all flex flex-col group ${isOverdue ? 'border-red-200 bg-red-50/30 ring-1 ring-red-100 shadow-red-100/50' : 'border-[#e5e2db] hover:shadow-md'}`}>
                                        <div className="flex items-start justify-between mb-3">
                                           <div className="flex flex-wrap gap-2">
                                              <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${getPriorityColor(task.priority)}`}>{task.priority}</span>
@@ -405,8 +406,8 @@ export default function Dashboard() {
 
       {/* Create Task Modal */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1f1d1a]/40 backdrop-blur-sm animate-in fade-in">
-           <div className="bg-white rounded-[2rem] p-8 w-full max-w-lg shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1f1d1a]/40 backdrop-blur-sm animate-in fade-in">
+           <div className="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6"><h2 className="text-2xl font-bold text-[#1f1d1a]">Create New Task</h2><button onClick={() => setShowCreate(false)} className="p-2 bg-[#f5f3ef] hover:bg-[#e5e2db] rounded-full transition-colors text-[#1f1d1a] cursor-pointer"><X className="w-5 h-5" /></button></div>
               <form onSubmit={handleCreateTask} className="space-y-4">
                  <div className="space-y-1.5"><label className="text-sm font-bold text-[#66635e]">Title</label><input className="w-full bg-[#fcfaf5] border border-[#e5e2db] rounded-xl px-4 py-3 text-sm" value={title} onChange={e => setTitle(e.target.value)} required /></div>

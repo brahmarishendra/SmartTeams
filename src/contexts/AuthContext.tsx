@@ -18,18 +18,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session error:', error);
+        if (error.message.includes('refresh_token')) {
+          localStorage.clear();
+          sessionStorage.clear();
+          setLoading(false);
+          return;
+        }
+      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user);
       else setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) {
+        setProfile(null);
+        setLoading(false);
+      }
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user);
-      else setProfile(null);
     });
 
     return () => subscription.unsubscribe();

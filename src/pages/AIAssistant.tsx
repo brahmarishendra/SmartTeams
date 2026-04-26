@@ -61,7 +61,7 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="h-full flex flex-col space-y-6 -m-4 md:-m-10 p-4 md:p-10 bg-[#0f0a19] min-h-[calc(100vh-64px)] md:min-h-screen text-white font-sans overflow-hidden">
+    <div className="h-full flex flex-col space-y-6 -m-4 md:-mt-10 md:-ml-10 md:-mr-6 md:-mb-10 p-4 md:p-10 bg-[#0f0a19] min-h-[calc(100vh-64px)] md:min-h-screen text-white font-sans overflow-hidden">
       
       {/* Main Chat Interface - Fixed Full Screen */}
       <div className="flex-1 flex flex-col bg-white/5 backdrop-blur-2xl border-t border-white/10 rounded-t-[2.5rem] shadow-2xl overflow-hidden relative">

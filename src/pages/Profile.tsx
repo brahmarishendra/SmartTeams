@@ -78,7 +78,7 @@ export default function Profile() {
   return (
     <div className="animate-in fade-in duration-500 w-full bg-white font-sans">
       
-      <div className="max-w-[1200px] mx-auto">
+      <div className="w-full">
         
         {/* Profile Header section - Simplified */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8 bg-gray-50/50 p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">

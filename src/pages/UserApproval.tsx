@@ -45,7 +45,7 @@ export default function UserApproval() {
   };
 
   return (
-    <div className="animate-in fade-in duration-500 max-w-6xl mx-auto py-8">
+    <div className="animate-in fade-in duration-500 py-8">
       <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-extrabold text-[#1f2937] tracking-tight mb-2 flex items-center gap-3">

@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui';
-import { format, isPast, parseISO } from 'date-fns';
+import { format, isPast, parseISO, isToday } from 'date-fns';
 import { Clock, LayoutList, Play, Pause, TrendingUp, Trash2 } from 'lucide-react';
 import { realtimeService } from '../lib/realtime';
 
@@ -113,7 +113,7 @@ export default function MyTasks() {
 
   const completedCount = tasks.filter(t => t.status === 'Completed').length;
   const progressPercentage = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
-  const overdueTasks = tasks.filter(t => t.due_date && isPast(parseISO(t.due_date)) && t.status !== 'Completed');
+  const overdueTasks = tasks.filter(t => t.due_date && isPast(parseISO(t.due_date)) && !isToday(parseISO(t.due_date)) && t.status !== 'Completed');
 
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
@@ -123,7 +123,7 @@ export default function MyTasks() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-10">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -217,10 +217,10 @@ export default function MyTasks() {
                   </div>
                </CardHeader>
                <CardContent className="p-6 flex-1 overflow-y-auto space-y-4 scrollbar-none">
-                  {tasks.map(task => {
-                     const isOverdue = task.due_date && isPast(parseISO(task.due_date)) && task.status !== 'Completed';
+                   {tasks.map(task => {
+                     const isOverdue = task.due_date && isPast(parseISO(task.due_date)) && !isToday(parseISO(task.due_date)) && task.status !== 'Completed';
                      return (
-                      <div key={task.id} className={`group relative p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all border ${isOverdue ? 'bg-red-500/5 border-red-500/20' : 'bg-white/5 border-white/5'}`}>
+                      <div key={task.id} className={`group relative p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all border ${isOverdue ? 'bg-red-500/10 border-red-500/40 shadow-sm shadow-red-500/10' : 'bg-white/5 border-white/5'}`}>
                          <div className="flex items-start gap-3 flex-1 min-w-0">
                             <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${isOverdue ? 'bg-red-50' : 'bg-primary'}`}></div>
                             <div className="min-w-0">

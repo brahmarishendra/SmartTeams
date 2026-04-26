@@ -16,13 +16,12 @@ export default function DashboardLayout() {
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   useEffect(() => {
-    if (!profile) return;
+    if (!profile?.id) return;
 
     // Consolidated Real-time Channel for ALL workspace communication
     const channel = supabase
       .channel('workspace-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        // Fallback: Dispatch a local refresh event
         window.dispatchEvent(new CustomEvent('workspace-refresh'));
       })
       .on('broadcast', { event: 'NOTIFY' }, (payload) => {
@@ -45,7 +44,7 @@ export default function DashboardLayout() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, showNotification]);
+  }, [profile?.id, showNotification]);
 
   if (!session) {
     return <Navigate to="/login" replace state={{ from: location }} />;

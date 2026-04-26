@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNotifications } from '../contexts/NotificationContext';
 import Notifications from '../components/Notifications';
-import { isBefore, addDays, isPast, parseISO } from 'date-fns';
 
 export default function DashboardLayout() {
   const { session, profile, signOut } = useAuth();

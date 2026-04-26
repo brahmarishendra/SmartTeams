@@ -236,21 +236,24 @@ export default function Dashboard() {
          <div className="xl:col-span-3 flex flex-col relative">
             {viewMode === 'board' && (
                <>
-                  {showScrollHint && (
-                    <div className="absolute -top-2 right-0 z-20 animate-in fade-in zoom-in duration-500">
-                      <div className="bg-[#1f1d1a] text-white text-[10px] px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-white/10">
-                        <div className="flex gap-1 animate-pulse">
-                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                          <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+                  <div className="relative">
+                    {showScrollHint && (
+                      <div className="absolute -top-2 right-0 z-20 animate-in fade-in zoom-in duration-500">
+                        <div className="bg-[#1f1d1a] text-white text-[10px] px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-white/10">
+                          <div className="flex gap-1 animate-pulse">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                            <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+                          </div>
+                          <span className="font-bold tracking-tight uppercase">Scroll for more</span>
                         </div>
-                        <span className="font-bold tracking-tight uppercase">Scroll for more</span>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                   <div 
-                    className="flex gap-6 overflow-x-auto pb-8 items-start scrollbar-thin scrollbar-thumb-[#e5e2db] scrollbar-track-transparent"
+                    className="flex-1 overflow-x-auto overflow-y-hidden pb-8 scrollbar-thin scrollbar-thumb-[#1f1d1a]/10 scrollbar-track-transparent cursor-grab active:cursor-grabbing"
                     onScroll={() => setShowScrollHint(false)}
                   >
+                  <div className="flex gap-6 items-start">
                   {columns.map(col => {
                      const colTasks = filteredTasks.filter(t => t.status === col.id);
                      return (
@@ -300,9 +303,10 @@ export default function Dashboard() {
                         </div>
                      );
                   })}
+                   </div>
                   </div>
-               </>
-            )}
+                </>
+             )}
 
             {viewMode === 'list' && (
                <div className="bg-white rounded-[1.5rem] border border-[#e5e2db] shadow-sm overflow-hidden animate-in fade-in">
@@ -368,21 +372,32 @@ export default function Dashboard() {
                <div className="absolute top-0 right-0 p-4 opacity-20"><Bell className="w-16 h-16 text-white" /></div>
                <h3 className="font-bold text-white text-xl mb-1 relative z-10">Action Required</h3>
                <p className="text-[#8a867d] text-xs font-semibold mb-6 relative z-10">Deadlines within 3 days</p>
-               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 relative z-10">
-                  {upcomingDeadlines.length === 0 ? <div className="text-center py-6 text-sm font-semibold text-[#8a867d]">All caught up!</div> : upcomingDeadlines.map(task => (
-                     <div key={task.id} className="bg-white/10 p-4 rounded-xl space-y-2 border border-white/10 hover:bg-white/20 transition-colors">
-                        <h4 className="text-sm font-bold truncate text-white">{task.title}</h4>
-                        <div className="flex justify-between text-xs text-white/60 font-semibold"><span>{task.assigned_user?.full_name?.split(' ')[0]}</span><span className="text-orange-400">{format(parseISO(task.due_date), 'MMM do')}</span></div>
-                        {profile?.role === 'ADMIN' && (
-                          <button 
-                            onClick={() => handleSendReminder(task)} 
-                            className="w-full mt-2 py-2 text-xs font-bold bg-white text-[#1f1d1a] rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
-                          >
-                            Send Reminder
-                          </button>
-                        )}
-                     </div>
-                  ))}
+               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 relative z-10 min-h-[50px]">
+                  {upcomingDeadlines.length === 0 ? (
+                    <div key="empty-deadlines" className="text-center py-6 text-sm font-semibold text-[#8a867d]">
+                      All caught up!
+                    </div>
+                  ) : (
+                    <div key="deadlines-list" className="space-y-4">
+                      {upcomingDeadlines.map(task => (
+                        <div key={task.id} className="bg-white/10 p-4 rounded-xl space-y-2 border border-white/10 hover:bg-white/20 transition-colors">
+                          <h4 className="text-sm font-bold truncate text-white">{task.title}</h4>
+                          <div className="flex justify-between text-xs text-white/60 font-semibold">
+                            <span>{task.assigned_user?.full_name?.split(' ')[0]}</span>
+                            <span className="text-orange-400">{format(parseISO(task.due_date), 'MMM do')}</span>
+                          </div>
+                          {profile?.role === 'ADMIN' && (
+                            <button 
+                              onClick={() => handleSendReminder(task)} 
+                              className="w-full mt-2 py-2 text-xs font-bold bg-white text-[#1f1d1a] rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                            >
+                              Send Reminder
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                </div>
             </div>
          </div>

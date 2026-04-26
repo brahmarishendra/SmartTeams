@@ -162,15 +162,29 @@ export default function DashboardLayout() {
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowNotifPanel(!showNotifPanel)} className={`p-2 text-muted-foreground hover:bg-secondary rounded-full relative cursor-pointer ${showNotifPanel ? 'bg-secondary text-primary' : ''}`}><Bell className="w-5 h-5" /></button>
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">{profile?.full_name?.charAt(0)}</div>
+            <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs shadow-sm overflow-hidden ring-2 ring-white">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                profile?.full_name?.charAt(0) || 'U'
+              )}
+            </div>
           </div>
         </header>
 
-        {/* Mobile Sidebar Overlay */}
-        {isSidebarOpen && (
-          <div className="fixed inset-0 z-50 flex md:hidden">
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)}></div>
-            <aside className="relative w-80 bg-[#f8f9fa] h-full flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
+        {/* Mobile Sidebar Overlay & Aside (Consolidated for smooth exit animations) */}
+        <div 
+          className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${isSidebarOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        >
+          {/* Backdrop */}
+          <div 
+            className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0'}`} 
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+          
+          {/* Sidebar */}
+          <aside 
+            className={`relative w-80 bg-[#f8f9fa] h-full flex flex-col shadow-2xl transition-transform duration-300 ease-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
               <div className="p-8 flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg">
@@ -215,9 +229,8 @@ export default function DashboardLayout() {
                 </div>
                 <button onClick={() => { signOut(); setIsSidebarOpen(false); }} className="flex w-full items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"><LogOut className="w-5 h-5" /><span>Sign Out</span></button>
               </div>
-            </aside>
-          </div>
-        )}
+          </aside>
+        </div>
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#fdfdfd] relative z-10">

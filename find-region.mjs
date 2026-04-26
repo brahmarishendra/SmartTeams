@@ -10,20 +10,31 @@ const projectId = 'ipuksbnsyqqssqtherbb';
 const password = 'P75NNzI3Vgr9Zulk';
 
 async function check() {
-  for (const region of regions) {
-    const host = `aws-0-${region}.pooler.supabase.com`;
+  async function attempt(host, label) {
     const connectionString = `postgresql://postgres.${projectId}:${password}@${host}:6543/postgres`;
-    const client = new Client({ connectionString, connectionTimeoutMillis: 2000 });
+    const client = new Client({ connectionString, connectionTimeoutMillis: 3000 });
     try {
-      console.log(`Checking ${region}...`);
+      console.log(`Checking ${label} (${host})...`);
       await client.connect();
-      console.log(`SUCCESS! Region is ${region}`);
+      console.log(`SUCCESS! Host is ${host}`);
       await client.end();
-      return;
+      process.exit(0);
     } catch (e) {
-      // console.log(`${region} failed: ${e.message}`);
+      console.log(`${label} failed: ${e.message}`);
     }
   }
-  console.log('All regions failed.');
+
+  for (const region of regions) {
+    const host = `aws-0-${region}.pooler.supabase.com`;
+    await attempt(host, `aws-${region}`);
+  }
+  // Also check gcp pooler
+  for (const region of ['us-east-1', 'eu-west-1']) {
+    const host = `gcp-0-${region}.pooler.supabase.com`;
+    await attempt(host, `gcp-${region}`);
+  }
+  // Also check fly pooler
+  await attempt(`${projectId}.fly.pooler.supabase.com`, 'fly');
+  console.log('All attempts failed.');
 }
 check();

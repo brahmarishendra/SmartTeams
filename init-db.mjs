@@ -3,17 +3,45 @@ import pg from 'pg';
 const { Client } = pg;
 
 // postgresql://postgres:P75NNzI3Vgr9Zulk@db.ipuksbnsyqqssqtherbb.supabase.co:5432/postgres
-const connectionString = 'postgresql://postgres:P75NNzI3Vgr9Zulk@[2406:da12:b78:de19:b28e:8985:5c71:ad2e]:5432/postgres';
-
-const client = new Client({
-  connectionString,
-});
+const connectionString = 'postgresql://postgres.ipuksbnsyqqssqtherbb:P75NNzI3Vgr9Zulk@aws-0-ap-south-1.pooler.supabase.com:6543/postgres';
 
 async function initDB() {
-  try {
-    await client.connect();
-    console.log('Connected to Supabase PostgreSQL database.');
+  const projectId = 'ipuksbnsyqqssqtherbb';
+  const password = 'P75NNzI3Vgr9Zulk';
+  const hosts = [
+    `db.${projectId}.supabase.co`, // Direct
+    `aws-0-ap-south-1.pooler.supabase.com`, // Mumbai
+    `aws-0-us-east-1.pooler.supabase.com`, // US East
+    `aws-0-ap-southeast-1.pooler.supabase.com`, // Singapore
+  ];
 
+  let client;
+  let connected = false;
+
+  for (const host of hosts) {
+    const isDirect = host.includes('.supabase.co');
+    const port = isDirect ? 5432 : 6543;
+    const user = isDirect ? 'postgres' : `postgres.${projectId}`;
+    const connectionString = `postgresql://${user}:${password}@${host}:${port}/postgres`;
+
+    try {
+      console.log(`Attempting connection to ${host}...`);
+      client = new Client({ connectionString, connectionTimeoutMillis: 5000 });
+      await client.connect();
+      console.log(`Connected successfully to ${host}!`);
+      connected = true;
+      break;
+    } catch (err) {
+      console.log(`Failed to connect to ${host}: ${err.message}`);
+    }
+  }
+
+  if (!connected) {
+    console.error('All connection attempts failed. Please verify your database password and project ID.');
+    return;
+  }
+
+  try {
     const createTablesQuery = `
       -- 1. Create profiles table linked to auth.users
       CREATE TABLE IF NOT EXISTS public.profiles (
@@ -164,6 +192,16 @@ async function initDB() {
         AFTER INSERT ON auth.users
         FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+      -- 8. Enable Real-time for tasks
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+          ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+        END IF;
+      EXCEPTION
+        WHEN OTHERS THEN
+          NULL;
+      END $$;
     `;
 
     console.log('Executing database schema creation and policies...');
@@ -173,7 +211,7 @@ async function initDB() {
   } catch (err) {
     console.error('Error initializing database:', err);
   } finally {
-    await client.end();
+    if (client) await client.end();
   }
 }
 

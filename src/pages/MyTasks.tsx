@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui';
 import { format, isPast, parseISO } from 'date-fns';
 import { Clock, LayoutList, Play, Pause, TrendingUp, Trash2 } from 'lucide-react';
+import { realtimeService } from '../lib/realtime';
 
 export default function MyTasks() {
   const { profile } = useAuth();
+  const { showNotification } = useNotifications();
   const [tasks, setTasks] = useState<any[]>([]);
 
   // Work Session State
@@ -23,16 +26,14 @@ export default function MyTasks() {
       setTimerSeconds(elapsed);
       setTimerRunning(true);
     }
-    const channel = supabase.channel('mytasks-db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
-        const newRecord = payload.new as any;
-        const oldRecord = payload.old as any;
-        if (profile?.role === 'ADMIN') { fetchMyTasks(); return; }
-        if (newRecord && (newRecord.assigned_to === profile?.id || newRecord.created_by === profile?.id)) { fetchMyTasks(); }
-        else if (oldRecord && (oldRecord.assigned_to === profile?.id)) { fetchMyTasks(); }
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    
+    // Listen for global refresh events
+    const handleRefresh = () => fetchMyTasks();
+    window.addEventListener('workspace-refresh', handleRefresh);
+
+    return () => {
+      window.removeEventListener('workspace-refresh', handleRefresh);
+    };
   }, [profile]);
 
   useEffect(() => {
@@ -72,13 +73,42 @@ export default function MyTasks() {
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {
     const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
-    if (!error) { setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t)); }
+    if (!error) { 
+      setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t)); 
+      showNotification('Status Updated', `Task status changed to ${newStatus}`, 'success');
+      
+      // Notify Admin and refresh everyone
+      realtimeService.notify({
+        senderId: profile.id,
+        targetRole: 'ADMIN',
+        title: '🔄 Status Change',
+        message: `${profile.full_name?.split(' ')[0]} updated a task to ${newStatus}`,
+        variant: 'success'
+      });
+      realtimeService.triggerRefresh();
+    } else {
+      showNotification('Error', error.message, 'error');
+    }
   };
 
   const handleDeleteTask = async (taskId: string) => {
     if (!confirm('Are you sure you want to delete this task?')) return;
     const { error } = await supabase.from('tasks').delete().eq('id', taskId);
-    if (!error) { setTasks(tasks.filter(t => t.id !== taskId)); }
+    if (!error) { 
+      setTasks(tasks.filter(t => t.id !== taskId)); 
+      showNotification('Deleted', 'Task has been removed', 'info');
+      
+      // Notify all and refresh
+      realtimeService.notify({
+        senderId: profile.id,
+        title: '🗑️ Task Removed',
+        message: `${profile.full_name?.split(' ')[0]} deleted a task.`,
+        variant: 'error'
+      });
+      realtimeService.triggerRefresh();
+    } else {
+      showNotification('Error', error.message, 'error');
+    }
   };
 
   const completedCount = tasks.filter(t => t.status === 'Completed').length;

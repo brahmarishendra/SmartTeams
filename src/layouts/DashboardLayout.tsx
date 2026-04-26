@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { Outlet, Navigate, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, Info, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Bot, LogOut, Loader2, UserCircle, Bell, X, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNotifications } from '../contexts/NotificationContext';
 import Notifications from '../components/Notifications';
 import { isBefore, addDays, isPast, parseISO } from 'date-fns';
 
 export default function DashboardLayout() {
   const { session, profile, signOut } = useAuth();
   const location = useLocation();
-  const [notification, setNotification] = useState<{ title: string; message: string } | null>(null);
+  const { showNotification } = useNotifications();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
@@ -17,43 +18,34 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (!profile) return;
 
+    // Consolidated Real-time Channel for ALL workspace communication
     const channel = supabase
-      .channel('new-tasks')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'tasks',
-          filter: `assigned_to=eq.${profile.id}`,
-        },
-        (payload) => {
-          const newRecord = payload.new as any;
-          const dueDate = newRecord.due_date ? parseISO(newRecord.due_date) : null;
-          const isUrgent = dueDate && isBefore(dueDate, addDays(new Date(), 4)) && !isPast(dueDate);
-          
-          setNotification({
-            title: isUrgent ? '🚨 Urgent Task Assigned' : 'New Task Assigned',
-            message: newRecord.title,
-          });
-          
-          try {
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            audio.volume = 0.5;
-            audio.play();
-          } catch (e) {
-            console.warn("Audio playback failed:", e);
-          }
-          
-          setTimeout(() => setNotification(null), 5000);
+      .channel('workspace-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        // Fallback: Dispatch a local refresh event
+        window.dispatchEvent(new CustomEvent('workspace-refresh'));
+      })
+      .on('broadcast', { event: 'NOTIFY' }, (payload) => {
+        const { title, message, variant, targetRole, targetId, senderId } = payload.payload;
+        if (senderId === profile.id) return;
+        if (targetRole && profile.role !== targetRole) return;
+        if (targetId && profile.id !== targetId) return;
+        showNotification(title, message, variant || 'info');
+      })
+      .on('broadcast', { event: 'REFRESH_TASKS' }, () => {
+        window.dispatchEvent(new CustomEvent('workspace-refresh'));
+      })
+      .on('broadcast', { event: 'REMINDER' }, (payload) => {
+        if (payload.payload.assigned_to === profile.id) {
+          showNotification('🔔 Task Reminder', `Admin is requesting an update on: ${payload.payload.title}`, 'assignment');
         }
-      )
+      })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile]);
+  }, [profile, showNotification]);
 
   if (!session) {
     return <Navigate to="/login" replace state={{ from: location }} />;
@@ -260,15 +252,6 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        {notification && (
-          <div className="fixed bottom-20 md:bottom-10 right-6 z-[100] animate-in slide-in-from-right-10 fade-in duration-300">
-            <div className="bg-[#1f1d1a] text-white p-5 rounded-[1.5rem] shadow-2xl border border-white/10 flex items-start gap-4 max-w-sm">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0"><Info className="w-5 h-5 text-blue-400" /></div>
-              <div className="flex-1 min-w-0"><h4 className="font-bold text-sm mb-1">{notification.title}</h4><p className="text-xs text-white/60 font-medium truncate">{notification.message}</p></div>
-              <button onClick={() => setNotification(null)} className="p-1 hover:bg-white/10 rounded-full transition-colors"><X className="w-4 h-4 text-white/40" /></button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

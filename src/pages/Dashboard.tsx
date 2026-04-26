@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { format, isPast, isToday, parseISO, addDays, isBefore, startOfDay } from 'date-fns';
 import { Search, Filter as FilterIcon, Calendar, LayoutList, CheckSquare, Plus, X, Bell, Trash2 } from 'lucide-react';
+import { realtimeService } from '../lib/realtime';
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const { showNotification } = useNotifications();
   const [tasks, setTasks] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   
@@ -26,6 +29,7 @@ export default function Dashboard() {
   const [priority, setPriority] = useState('Medium');
   const [dueDate, setDueDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
+  const [showScrollHint, setShowScrollHint] = useState(true);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,35 +45,83 @@ export default function Dashboard() {
     if (!error) {
       setShowCreate(false);
       setTitle(''); setDesc(''); setDueDate(''); setAssignedTo('');
+      fetchTasks(); // Immediately fetch tasks after creation
+      showNotification('Success', 'Task created successfully', 'success');
+      
+      // Notify employees and refresh their boards
+      realtimeService.notify({
+        senderId: profile.id,
+        targetRole: 'EMPLOYEE',
+        title: assignedTo === profile.id ? '🎯 New Assignment' : '🆕 Workspace Update',
+        message: assignedTo === profile.id ? `You have a new task: ${title}` : `New task added: ${title}`,
+        variant: assignedTo === profile.id ? 'assignment' : 'info'
+      });
+      realtimeService.triggerRefresh();
+    } else {
+      showNotification('Error', error.message, 'error');
+    }
+  };
+
+  const handleStatusChange = async (taskId: string, newStatus: string) => {
+    const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
+    if (!error) {
+      // Update local state immediately for better UX
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+      
+      // Notify Admin and refresh
+      realtimeService.notify({
+        senderId: profile.id,
+        targetRole: 'ADMIN',
+        title: '🔄 Status Change',
+        message: `Task status moved to ${newStatus}`,
+        variant: 'success'
+      });
+      realtimeService.triggerRefresh();
     } else {
       alert(error.message);
     }
   };
 
-  const handleStatusChange = async (taskId: string, newStatus: string) => {
-    await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId);
-  };
-
   const handleDeleteTask = async (taskId: string) => {
     if (!confirm('Are you sure you want to delete this task?')) return;
     const { error } = await supabase.from('tasks').delete().eq('id', taskId);
-    if (error) alert(error.message);
+    if (!error) {
+      // Update local state immediately for better UX
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      showNotification('Deleted', 'Task has been removed', 'info');
+      
+      // Notify all and refresh
+      realtimeService.notify({
+        senderId: profile.id,
+        title: '🗑️ Task Removed',
+        message: `A task was deleted from the workspace.`,
+        variant: 'error'
+      });
+      realtimeService.triggerRefresh();
+    } else {
+      showNotification('Error', error.message, 'error');
+    }
   };
 
   useEffect(() => {
     fetchTasks();
     if (profile?.role === 'ADMIN') fetchProfiles();
 
-    const channel = supabase.channel('dashboard-tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        fetchTasks();
-      })
-      .subscribe();
+    // Listen for global refresh events from DashboardLayout
+    const handleRefresh = () => fetchTasks();
+    window.addEventListener('workspace-refresh', handleRefresh);
 
     return () => {
-      supabase.removeChannel(channel);
+      window.removeEventListener('workspace-refresh', handleRefresh);
     };
   }, [profile]);
+
+  useEffect(() => {
+    if (showScrollHint) {
+      const timer = setTimeout(() => setShowScrollHint(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showScrollHint]);
 
   const fetchTasks = async () => {
     const { data } = await supabase.from('tasks').select('*, assigned_user:assigned_to(full_name)').order('due_date', { ascending: true });
@@ -125,6 +177,14 @@ export default function Dashboard() {
     return profile.role === 'ADMIN' || task.assigned_to === profile.id;
   };
 
+  const handleSendReminder = async (task: any) => {
+    await realtimeService.broadcast('REMINDER', { 
+      assigned_to: task.assigned_to,
+      title: task.title 
+    });
+    showNotification('Reminder Sent', `Sent a nudge to the assigned employee for "${task.title}"`, 'success');
+  };
+
   return (
     <div className="animate-in fade-in duration-500 w-full h-full min-h-screen bg-[#fcfaf5] p-6 md:p-10 font-sans text-[#1f1d1a] -m-4 md:-m-10">
       
@@ -172,10 +232,25 @@ export default function Dashboard() {
          )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-         <div className="xl:col-span-3 flex flex-col">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 relative">
+         <div className="xl:col-span-3 flex flex-col relative">
             {viewMode === 'board' && (
-               <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-none items-start">
+               <>
+                  {showScrollHint && (
+                    <div className="absolute -top-2 right-0 z-20 animate-in fade-in zoom-in duration-500">
+                      <div className="bg-[#1f1d1a] text-white text-[10px] px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl border border-white/10">
+                        <div className="flex gap-1 animate-pulse">
+                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                          <div className="w-1.5 h-1.5 bg-white/40 rounded-full"></div>
+                        </div>
+                        <span className="font-bold tracking-tight uppercase">Scroll for more</span>
+                      </div>
+                    </div>
+                  )}
+                  <div 
+                    className="flex gap-6 overflow-x-auto pb-8 items-start scrollbar-thin scrollbar-thumb-[#e5e2db] scrollbar-track-transparent"
+                    onScroll={() => setShowScrollHint(false)}
+                  >
                   {columns.map(col => {
                      const colTasks = filteredTasks.filter(t => t.status === col.id);
                      return (
@@ -225,7 +300,8 @@ export default function Dashboard() {
                         </div>
                      );
                   })}
-               </div>
+                  </div>
+               </>
             )}
 
             {viewMode === 'list' && (
@@ -297,7 +373,14 @@ export default function Dashboard() {
                      <div key={task.id} className="bg-white/10 p-4 rounded-xl space-y-2 border border-white/10 hover:bg-white/20 transition-colors">
                         <h4 className="text-sm font-bold truncate text-white">{task.title}</h4>
                         <div className="flex justify-between text-xs text-white/60 font-semibold"><span>{task.assigned_user?.full_name?.split(' ')[0]}</span><span className="text-orange-400">{format(parseISO(task.due_date), 'MMM do')}</span></div>
-                        {profile?.role === 'ADMIN' && <button onClick={() => {}} className="w-full mt-2 py-2 text-xs font-bold bg-white text-[#1f1d1a] rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">Send Reminder</button>}
+                        {profile?.role === 'ADMIN' && (
+                          <button 
+                            onClick={() => handleSendReminder(task)} 
+                            className="w-full mt-2 py-2 text-xs font-bold bg-white text-[#1f1d1a] rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                          >
+                            Send Reminder
+                          </button>
+                        )}
                      </div>
                   ))}
                </div>

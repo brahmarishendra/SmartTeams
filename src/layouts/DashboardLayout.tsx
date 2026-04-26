@@ -45,6 +45,22 @@ export default function DashboardLayout() {
     };
   }, [profile?.id, showNotification]);
 
+  // Auto-collapse sidebar on smaller desktop screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1100) {
+        setIsCollapsed(true);
+      } else if (window.innerWidth >= 1100) {
+        setIsCollapsed(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (!session) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
@@ -80,9 +96,9 @@ export default function DashboardLayout() {
       <div className="w-full h-full flex flex-col md:flex-row overflow-hidden">
         
         {/* Desktop Sidebar */}
-        <aside className={`${isCollapsed ? 'w-24' : 'w-20 lg:w-[280px]'} bg-[#f8f9fa] flex flex-col hidden md:flex border-r border-border/50 shrink-0 transition-all duration-300 relative`}>
+        <aside className={`${isCollapsed ? 'w-24' : 'w-64 lg:w-[280px]'} bg-[#f8f9fa] flex flex-col hidden md:flex border-r border-border/50 shrink-0 transition-all duration-300 relative`}>
           
-          <div className={`p-8 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} mb-4`}>
+          <div className={`p-4 lg:p-8 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} mb-4`}>
             <div className="flex items-center space-x-3 overflow-hidden">
               <div className="w-[45px] h-[45px] rounded-2xl overflow-hidden shadow-lg shadow-primary/20 shrink-0">
                  <img src="https://i.pinimg.com/1200x/7b/0c/29/7b0c29141de963589fb4a78b299006c1.jpg" alt="Logo" className="w-full h-full object-cover" />
@@ -97,7 +113,7 @@ export default function DashboardLayout() {
             </button>
           </div>
           
-          <nav className="flex-1 px-6 space-y-3 overflow-y-auto pb-8">
+          <nav className="flex-1 px-3 lg:px-6 space-y-3 overflow-y-auto pb-8">
             {!isCollapsed && <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4 px-2">Main Menu</div>}
             {allowedNavItems.map((item) => {
               const Icon = item.icon;
@@ -121,7 +137,7 @@ export default function DashboardLayout() {
             })}
           </nav>
 
-          <div className={`p-6 mt-auto bg-gradient-to-t from-secondary/80 to-transparent ${isCollapsed ? 'items-center' : ''}`}>
+          <div className={`p-4 lg:p-6 mt-auto bg-gradient-to-t from-secondary/80 to-transparent ${isCollapsed ? 'items-center' : ''}`}>
             <div className={`flex ${isCollapsed ? 'flex-col' : 'flex-row'} items-center lg:space-x-4 mb-6 bg-white p-4 rounded-3xl shadow-sm`}>
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-accent to-primary text-white flex items-center justify-center font-bold relative shrink-0 shadow-inner overflow-hidden">
                 {profile?.avatar_url ? (

@@ -232,8 +232,8 @@ export default function DashboardLayout() {
         </div>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#fdfdfd] relative z-10">
-          <div className="flex-1 overflow-y-auto p-4 md:p-10 pb-24 md:pb-10">
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#fcfaf5] relative z-10">
+          <div className="flex-1 overflow-y-auto pb-24 md:pb-10">
             <Outlet />
           </div>
           {showNotifPanel && (
